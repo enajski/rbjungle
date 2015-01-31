@@ -26,9 +26,14 @@ verse1 = [:puci, :taci, :puci, :taci, :taci, :taci, :puci, :ciu]
 def riff(prophet_ctl: 0, tb303_ctl: 0, noise_ctl: 0, square_ctl: 0)
   with_fx :echo, phase: 0.15, mix: 0.6 do
     puts "#{prophet_ctl} #{tb303_ctl}, #{noise_ctl}, #{square_ctl}"
-    use_synth synth_mix(prophet: prophet_ctl, tb303: tb303_ctl, noise: noise_ctl, square: square_ctl).choose
-    play choose(chord(:c3, :m7)), release: [0.1, 0.2, 0.3].choose, amp: rrand(0.2, 1.5)
-    sleep map_durations(conservative: 3, wild: 1).choose
+
+    [[:c3, :m7], [:c4, :m7]].each do |tonation|
+      4.times do
+        use_synth synth_mix(prophet: prophet_ctl, tb303: tb303_ctl, noise: noise_ctl, square: square_ctl).choose
+        play choose(chord(tonation)), release: [0.1, 0.2, 0.3].choose, amp: rrand(0.2, 1.5)
+        sleep map_durations(conservative: 3, wild: 1).choose
+      end
+    end
   end
 end
 
@@ -61,9 +66,9 @@ end
 
 define :bass do
   random_pan do
-    with_fx :rlpf, cutoff: rrand(20, 30), res: [0.1, 0.2].choose do
+    with_fx :rlpf, cutoff: rrand(20, 100), res: [0.1, 0.2].choose do
       distort do
-        4.times { riff(prophet_ctl: 0, tb303_ctl: 0, noise_ctl: 1, square_ctl: 0) }
+        4.times { riff(prophet_ctl: 0, tb303_ctl: 0, noise_ctl: 0, square_ctl: 1) }
       end
     end
     with_fx :rlpf, cutoff: rrand(60, 130), res: [0.1, 0.2].choose do
@@ -135,5 +140,6 @@ end
 in_thread(name: :sampler) do
   loop do
     samplepack
+    sleep 12
   end
 end
