@@ -18,10 +18,15 @@ def ciu
   sample :loop_amen_full, start: 0.905, finish: 0.93, rate: [0.75, 1, 1.25].choose, amp: 0.6
 end
 
+def stab
+  sample :loop_industrial, rate: 1.5, start: 0.5, finish: 1.0, amp: 0.5
+end
+
 intro = [:puci, :puci, :puci, :puci, :taci, :taci, :taci, :ciu]
 main1 = [:cii,  :cii,  :taci, :taci, :cii,  :cii , :cii,  :cii]
 solo1 = main1.shuffle[0..-2] + [:ciu]
 verse1 = [:puci, :taci, :puci, :taci, :taci, :taci, :puci, :ciu]
+hard_verse1 = [:puci, :stab, :puci, :puci, :stab, :stab, :taci, :stab, :taci, :stab, :cii, :cii, :stab, :ciu]
 
 def riff(prophet_ctl: 0, tb303_ctl: 0, noise_ctl: 0, square_ctl: 0)
   with_fx :echo, phase: 0.15, mix: 0.6 do
@@ -60,6 +65,7 @@ define :drums do
         verse solo1
       end
       4.times { verse verse1 }
+      4.times { verse hard_verse1 }
     end
   end
 end
