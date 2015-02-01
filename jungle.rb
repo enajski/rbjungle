@@ -114,7 +114,7 @@ end
 
 def word(note)
   self.send(note)
-  self.send(playing_styles.choose)
+  self.send(:faster)
 end
 
 def playing_styles
