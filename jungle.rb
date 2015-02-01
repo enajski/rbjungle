@@ -19,7 +19,8 @@ def ciu
 end
 
 def stab
-  sample :loop_industrial, rate: 1.5, start: 0.5, finish: 1.0, amp: 0.5
+  [lambda { sample :loop_industrial, rate: 1.5, start: 0.5, finish: 1.0, amp: 0.5 },
+   lambda { sample :drum_cymbal_closed, rate: [0.9, 1.0].choose, start: 0.0, finish: 1.0 }].choose.call
 end
 
 intro = [:puci, :puci, :puci, :puci, :taci, :taci, :taci, :ciu]
