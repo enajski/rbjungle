@@ -51,7 +51,8 @@ def references(amp: 0.5, rate: 1.0)
   with_fx :echo, phase: 0.15, mix: 0.6 do
     with_fx :hpf, cutoff: 40 do
       with_fx :wobble, amp: amp, cutoff_min: 60, cutoff_max: 128, filter: 0 do
-        sample :bass_voxy_c, amp: rrand(0.1, 0.4), rate: rate
+        [lambda { sample :bass_voxy_c, amp: rrand(0.1, 0.4), rate: rate },
+         lambda { sample :ambi_piano, amp: rrand(0.3, 0.7), rate: rate }].choose.call
       end
     end
     sleep map_durations(conservative: 2, wild: 1, slow: 3).choose
