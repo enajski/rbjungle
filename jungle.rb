@@ -36,7 +36,7 @@ def riff(prophet_ctl: 0, tb303_ctl: 0, noise_ctl: 0, square_ctl: 0)
     [[:c3, :m7], [:c4, :m7]].each do |tonation|
       4.times do
         use_synth synth_mix(prophet: prophet_ctl, tb303: tb303_ctl, noise: noise_ctl, square: square_ctl).choose
-        play choose(chord(tonation)), release: [0.1, 0.2, 0.3].choose, amp: rrand(0.2, 1.5)
+        play choose(chord(tonation)), release: [0.1, 0.2, 0.3].choose, amp: rrand(0.2, 1.0)
         sleep map_durations(conservative: 3, wild: 1).choose
       end
     end
