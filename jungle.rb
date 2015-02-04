@@ -1,27 +1,6 @@
-def taci
-  sample :loop_amen, start: 0.75, finish: 1, rate: 1.5
-end
-
-def cita
-  sample :loop_amen, start: 0.5, finish: 0.75, rate: 1.5
-end
-
-def puci
-  sample :loop_amen, start: 0.0, finish: 0.25, rate: 1.5
-end
-
-def cii
-  sample :loop_amen_full, start: 0.905, finish: 0.96, rate: 1.5, amp: 0.6
-end
-
-def ciu
-  sample :loop_amen_full, start: 0.905, finish: 0.93, rate: [0.75, 1, 1.25].choose, amp: 0.6
-end
-
-def stab
-  [lambda { sample :loop_industrial, rate: 1.5, start: 0.5, finish: 1.0, amp: 0.5 },
-   lambda { sample :drum_cymbal_closed, rate: [0.9, 1.0].choose, start: 0.0, finish: 1.0 }].choose.call
-end
+require "~/experiments/rbjungle/methods.rb"
+require "~/experiments/rbjungle/sounds.rb"
+require "~/experiments/rbjungle/effects.rb"
 
 intro = [:puci, :puci, :puci, :puci, :taci, :taci, :taci, :ciu]
 main1 = [:cii,  :cii,  :taci, :taci, :cii,  :cii , :cii,  :cii]
@@ -93,44 +72,6 @@ define :samplepack do
   references amp: 0.3, rate: 0.5
   references amp: 0.4, rate: 0.8
   4.times { references amp: 0.7, rate: 4.0 }
-
-end
-
-def distort(&block)
-  with_fx :distortion, distort: 0.8 do
-    yield
-  end
-end
-
-def random_pan(&block)
-  with_fx :pan, pan: [-0.1, 0, 0.1].choose do
-    yield
-  end
-end
-
-def verse(sequence)
-  sequence.map { |note| word note }
-end
-
-def word(note)
-  self.send(note)
-  self.send(:faster)
-end
-
-def playing_styles
-  [:faster, :slower]
-end
-
-def faster
-  sleep map_durations(conservative: 6, wild: 4, slow: 0).choose
-end
-
-def slower
-  sleep map_durations(conservative: 6, wild: 2, slow: 1).choose
-end
-
-def map_durations(conservative: 8, wild: 0, slow: 0)
-  ([0.15] * wild) + ([0.3] * conservative) + ([0.45] * slow)
 end
 
 in_thread(name: :looper) do
