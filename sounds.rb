@@ -23,10 +23,12 @@ def kick
 end
 
 def blip
-  sample :elec_blip, rate: 1.0, start: 0.0, finish: 1.0
+  [lambda { sample :elec_blip, rate: 2.0, start: 0.0, finish: 1.0 },
+   lambda { sample :elec_blip, start: 0.5, finish: 0.8, rate: [-0.2, -0.6, -1].choose, attack: 0.3, release: 1 },
+   lambda { sample :elec_bell, rate: [0.2, 0.4, 0.8].choose, start: 0.0, finish: 1.0 }].choose.call
 end
 
 def stab
   [lambda { sample :loop_industrial, rate: 1.5, start: 0.5, finish: 1.0, amp: 0.5 },
-   lambda { sample :drum_cymbal_closed, rate: [0.9, 1.0].choose, start: 0.0, finish: 1.0 }].choose.call
+   lambda { sample :drum_cymbal_closed, rate: [0.9, 1.0].choose, start: 0.0, finish: 1.0, amp: 0.7 }].choose.call
 end
