@@ -1,6 +1,9 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    marky_markov (0.3.5)
+      msgpack
+    msgpack (0.7.1)
     osc-ruby (1.1.1)
     sonic-pi-cli (0.0.4)
       osc-ruby
@@ -9,6 +12,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  marky_markov
   sonic-pi-cli
 
 BUNDLED WITH
