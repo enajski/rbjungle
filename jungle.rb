@@ -1,6 +1,7 @@
 require "~/experiments/rbjungle/methods.rb"
 require "~/experiments/rbjungle/sounds.rb"
 require "~/experiments/rbjungle/effects.rb"
+require "marky_markov"
 
 intro = [:puci, :puci, :puci, :puci, :taci, :taci, :taci, :ciu]
 main1 = [:cii,  :cii,  :taci, :taci, :cii,  :cii , :cii,  :cii]
@@ -41,12 +42,21 @@ end
 define :drums do
   with_fx :reverb, room: 0.2, mix: 0.05 do
     distort do
-      with_fx :ixi_techno, res: 0.4, amp: 0.8 do
-        3.times { verse intro }
-        verse solo1
+      [intro, main1, verse1, hard_verse1].each do |part|
+        markov = MarkyMarkov::TemporaryDictionary.new
+        markov.parse_string(part.join(" "))
+
+        seq_length = [8, 16].sample
+
+        seq = markov.generate_n_words(seq_length).gsub(".", "").split(" ").map(&:to_sym)
+        seq[0] = [:puci, :kick].sample
+
+        3.times { verse seq }
+
+        with_fx :ixi_techno, res: 0.4, amp: 0.8 do
+          1.times { verse seq }
+        end
       end
-      4.times { verse verse1 }
-      4.times { verse hard_verse1 }
     end
   end
 end
@@ -76,6 +86,7 @@ end
 
 in_thread(name: :looper) do
   loop do
+    sleep 32 * 0.3
     drums
   end
 end
