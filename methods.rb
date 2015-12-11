@@ -1,10 +1,14 @@
 def verse(sequence)
-  sequence.map { |note| word note }
+  sequence.map do |note|
+    self.send(note)
+    sleep 0.3
+  end
+  puts "Ended #{sequence.size} note bar"
 end
 
 def word(note)
   self.send(note)
-  self.send(:faster)
+  self.send(playing_styles.sample)
 end
 
 def playing_styles
@@ -21,4 +25,25 @@ end
 
 def map_durations(conservative: 8, wild: 0, slow: 0)
   ([0.15] * wild) + ([0.3] * conservative) + ([0.45] * slow)
+end
+
+def make_fixed_length_seq(length:, timings:, &block)
+  seq = []
+  seq_length = 8.0 * 0.3
+
+  current_length = 0.0
+
+  while seq.empty? || current_length < seq_length
+    new_note = yield
+    new_timing = timings.sample
+
+    new_timed_note = {new_note => new_timing}
+
+    if seq.empty? || (seq_length - current_length).round(2) >= new_timing
+      seq.push(new_timed_note)
+      current_length = (current_length + new_timing).round(2)
+    end
+  end
+
+  seq
 end
