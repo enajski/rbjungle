@@ -9,30 +9,13 @@ solo1 = main1.shuffle[0..-2] + [:ciu]
 verse1 = [:puci, :taci, :puci, :taci, :taci, :taci, :puci, :ciu]
 hard_verse1 = [:puci, :stab, :puci, :puci, :stab, :stab, :taci, :stab, :taci, :stab, :cii, :cii, :stab, :ciu]
 
-def riff(prophet_ctl: 0, tb303_ctl: 0, noise_ctl: 0, square_ctl: 0)
-  with_fx :echo, phase: 0.15, mix: 0.6 do
-    puts "#{prophet_ctl} #{tb303_ctl}, #{noise_ctl}, #{square_ctl}"
-
-    [[:c3, :m7], [:c4, :m7]].each do |tonation|
-      4.times do
-        use_synth synth_mix(prophet: prophet_ctl, tb303: tb303_ctl, noise: noise_ctl, square: square_ctl).choose
-        play choose(chord(tonation)), release: [0.1, 0.2, 0.3].choose, amp: rrand(0.2, 1.0)
-        sleep map_durations(conservative: 3, wild: 1).choose
-      end
-    end
-  end
-end
-
-def synth_mix(prophet: 0, tb303: 0, noise: 0, square: 0)
-  ([:supersaw] * prophet) + ([:tb303] * tb303) + ([:pnoise] * noise) + ([:square] * square)
-end
-
 def references(amp: 0.5, rate: 1.0)
   with_fx :echo, phase: 0.15, mix: 0.6 do
     with_fx :hpf, cutoff: 40 do
       with_fx :wobble, amp: amp, cutoff_min: 60, cutoff_max: 128, filter: 0 do
         [lambda { sample :bass_voxy_c, amp: rrand(0.1, 0.4), rate: rate },
-         lambda { sample :ambi_piano, amp: rrand(0.3, 0.7), rate: rate }].choose.call
+         lambda { sample :ambi_piano, amp: rrand(0.3, 0.7), rate: rate },
+         lambda { sample :guit_harmonics, amp: amp}].choose.call
       end
     end
     sleep map_durations(conservative: 2, wild: 1, slow: 3).choose
@@ -62,26 +45,33 @@ define :drums do
 end
 
 define :bass do
-  random_pan do
-    with_fx :rlpf, cutoff: rrand(20, 100), res: [0.1, 0.2].choose do
-      distort do
-        4.times { riff(prophet_ctl: 1, tb303_ctl: 0, noise_ctl: 0, square_ctl: 0) }
-      end
-    end
-    with_fx :rlpf, cutoff: rrand(60, 130), res: [0.1, 0.2].choose do
-      distort do
-        4.times { riff(tb303_ctl: 1, square_ctl: 0) }
+
+  use_synth :sine
+  use_random_seed rrand(0, 50000)
+
+  bass_seq = make_fixed_length_seq(length: 8.0 * 0.3, timings: [0.3, 0.6, 0.15]) do
+    chord([[:c2, :m7], [:d2, :m7]].sample).sample
+  end
+
+  4.times do
+
+    distort do
+      with_fx :rlpf, cutoff: rrand(70, 130), res: [0.1, 0.2].choose do
+        random_pan do
+
+          bass_seq.each do |timed_note|
+            play timed_note.keys.first, release: [0.6, 0.3, 0.15].select { |n| n <= timed_note.values.first }.choose, amp: rrand(0.8, 1.0)
+            sleep timed_note.values.last
+          end
+
+        end
       end
     end
   end
 end
 
 define :samplepack do
-  references amp: 0.1, rate: 0.1
-  references amp: 0.2, rate: 0.2
-  references amp: 0.3, rate: 0.5
-  references amp: 0.4, rate: 0.8
-  4.times { references amp: 0.7, rate: 4.0 }
+  4.times { references amp: 0.8, rate: 1.0 }
 end
 
 in_thread(name: :looper) do
