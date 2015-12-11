@@ -29,19 +29,17 @@ end
 
 def make_fixed_length_seq(length:, timings:, &block)
   seq = []
-  seq_length = 8.0 * 0.3
-
   current_length = 0.0
 
-  while seq.empty? || current_length < seq_length
+  while seq.empty? || current_length < length
     new_note = yield
     new_timing = timings.sample
 
     new_timed_note = {new_note => new_timing}
 
-    if seq.empty? || (seq_length - current_length).round(2) >= new_timing
+    if seq.empty? || (length - current_length).round(3) >= new_timing
       seq.push(new_timed_note)
-      current_length = (current_length + new_timing).round(2)
+      current_length = (current_length + new_timing).round(3)
     end
   end
 
