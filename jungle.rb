@@ -10,7 +10,7 @@ verse1 = [:puci, :taci, :puci, :taci, :taci, :taci, :puci, :ciu]
 hard_verse1 = [:puci, :stab, :puci, :puci, :stab, :stab, :taci, :stab, :taci, :stab, :cii, :cii, :stab, :ciu]
 
 def references(amp: 0.5, rate: 1.0)
-  with_fx :echo, phase: 0.15, mix: 0.6 do
+  with_fx :echo, phase: 0.6, mix: 0.6 do
     with_fx :hpf, cutoff: 40 do
       with_fx :wobble, amp: amp, cutoff_min: 60, cutoff_max: 128, filter: 0 do
         [lambda { sample :bass_voxy_c, amp: rrand(0.1, 0.4), rate: rate },
@@ -26,18 +26,13 @@ define :drums do
   with_fx :reverb, room: 0.2, mix: 0.05 do
     distort do
       [intro, main1, verse1, hard_verse1].each do |part|
-        markov = MarkyMarkov::TemporaryDictionary.new
-        markov.parse_string(part.join(" "))
-
-        seq_length = [8, 16].sample
-
-        seq = markov.generate_n_words(seq_length).gsub(".", "").split(" ").map(&:to_sym)
+        seq = make_markov(part)
         seq[0] = [:puci, :kick].sample
 
         3.times { verse seq }
 
         with_fx :ixi_techno, res: 0.4, amp: 0.8 do
-          1.times { verse seq }
+          1.times { verse seq.shuffle }
         end
       end
     end
@@ -46,14 +41,16 @@ end
 
 define :bass do
 
-  use_synth :sine
-  use_random_seed rrand(0, 50000)
+  use_synth %w(sine tb303 subpulse).sample
+  use_random_seed 356
 
-  bass_seq = make_fixed_length_seq(length: 8.0 * 0.3, timings: [0.3, 0.6, 0.15]) do
+  bass_seq = make_fixed_length_seq(length: 16.0 * 0.3, timings: [0.3, 0.6, 0.15]) do
     chord([[:c2, :m7], [:d2, :m7]].sample).sample
   end
 
-  4.times do
+  4.times do |index|
+
+    bass_seq.shuffle! if index == 3
 
     distort do
       with_fx :rlpf, cutoff: rrand(70, 130), res: [0.1, 0.2].choose do
@@ -76,7 +73,7 @@ end
 
 in_thread(name: :looper) do
   loop do
-    sleep 32 * 0.3
+    sleep 64 * 0.3
     drums
   end
 end
@@ -89,7 +86,7 @@ end
 
 in_thread(name: :sampler) do
   loop do
+    sleep 32 * 0.3
     samplepack
-    sleep 12
   end
 end
