@@ -3,7 +3,7 @@ require "~/experiments/rbjungle/sounds.rb"
 require "~/experiments/rbjungle/effects.rb"
 require "marky_markov"
 
-$break_paths = Dir.chdir("/Users/dev/Music/real_jungle_loops_by_noise_relations/") do
+BREAK_PATHS = Dir.chdir("/Users/dev/Music/real_jungle_loops_by_noise_relations/") do
   Dir.glob("*.wav").map { |path| Dir.pwd + "/" + path }
 end
 
@@ -32,8 +32,8 @@ in_thread(name: :breakz) do
     with_fx :reverb, room: 0.2, mix: 0.05 do
       distort do
 
-        main_break = $break_paths.sample
-        fill_in_break = $break_paths.sample
+        main_break = BREAK_PATHS.sample
+        fill_in_break = BREAK_PATHS.sample
 
         puts main_break
         puts fill_in_break
