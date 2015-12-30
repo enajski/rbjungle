@@ -45,3 +45,16 @@ def make_fixed_length_seq(length:, timings:, &block)
 
   seq
 end
+
+def make_markov(input)
+  markov = MarkyMarkov::TemporaryDictionary.new
+  markov.parse_string(input.join(" "))
+
+  seq_length = [8, 16].sample
+
+  markov.
+    generate_n_words(seq_length).
+    gsub(".", "").
+    split(" ").
+    map(&:to_sym)
+end
