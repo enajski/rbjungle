@@ -7,6 +7,10 @@ BREAK_PATHS = Dir.chdir("/Users/dev/Music/real_jungle_loops_by_noise_relations/"
   Dir.glob("*.wav").map { |path| Dir.pwd + "/" + path }
 end
 
+RAGGA_PATHS = Dir.chdir("/Users/dev/Music/ragga_samples/") do
+  Dir.glob("*.wav").map { |path| Dir.pwd + "/" + path }
+end
+
 TEMPO = 1.0
 LOOP_LENGTH = 1.4 * TEMPO
 
@@ -15,6 +19,8 @@ NOTE_LENGTH_DISTRIBUTION = [(2 * LOOP_LENGTH), LOOP_LENGTH, (LOOP_LENGTH / 2), (
 LONG_NOTE_LENGTH_DISTRIBUTION = [(4 * LOOP_LENGTH), (2 * LOOP_LENGTH),LOOP_LENGTH]
 
 SHORT_NOTE_LENGTH_DISTRIBUTION = [(LOOP_LENGTH / 2), (LOOP_LENGTH / 4), (LOOP_LENGTH / 8)]
+
+HALF_SPEED_AND_DOUBLE_SPEED = [1.5, 1.0, 0.5]
 
 def timing_to_sleep(timing:, loop_length_in_seconds:)
   start = timing.first
@@ -114,5 +120,16 @@ in_thread(name: :bass) do
         end
       end; #end; end; #end
     end
+  end
+end
+
+in_thread(name: :sampler) do
+  loop do
+    with_fx :echo, phase: SHORT_NOTE_LENGTH_DISTRIBUTION.sample, mix: 0.9, decay: LONG_NOTE_LENGTH_DISTRIBUTION.sample, max_phase: SHORT_NOTE_LENGTH_DISTRIBUTION.max do
+      with_fx :flanger do
+        sample RAGGA_PATHS.sample, rate: HALF_SPEED_AND_DOUBLE_SPEED.sample
+      end
+    end
+    sleep [16, 8, 4].sample * LOOP_LENGTH
   end
 end
