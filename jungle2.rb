@@ -7,98 +7,112 @@ BREAK_PATHS = Dir.chdir("/Users/dev/Music/real_jungle_loops_by_noise_relations/"
   Dir.glob("*.wav").map { |path| Dir.pwd + "/" + path }
 end
 
-LOOP_LENGTH = 1.4
-NOTE_LENGTH_DISTRIBUTION = [(LOOP_LENGTH / 2), (LOOP_LENGTH / 4), (LOOP_LENGTH / 8)]
+TEMPO = 1.0
+LOOP_LENGTH = 1.4 * TEMPO
+
+NOTE_LENGTH_DISTRIBUTION = [(2 * LOOP_LENGTH), LOOP_LENGTH, (LOOP_LENGTH / 2), (LOOP_LENGTH / 4), (LOOP_LENGTH / 8)]
+
+LONG_NOTE_LENGTH_DISTRIBUTION = [(4 * LOOP_LENGTH), (2 * LOOP_LENGTH),LOOP_LENGTH]
+
+SHORT_NOTE_LENGTH_DISTRIBUTION = [(LOOP_LENGTH / 2), (LOOP_LENGTH / 4), (LOOP_LENGTH / 8)]
 
 def timing_to_sleep(timing:, loop_length_in_seconds:)
   start = timing.first
   finish = timing.last
 
   partial_length = finish - start
-  partial_length * loop_length_in_seconds
+  partial_length * loop_length_in_seconds * 1.0
 end
 
 def play_break_seq(drum_seq:, break_path:)
   drum_seq.each do |timed_note|
-    normal_speed_to_slowdown_distribution = ([1.0] * 15) + [0.5]
+    one_sixteenth = ([1.0] * 15) + [0.5]
+    normal_to_trill_distribution = one_sixteenth
+    normal_speed_to_slowdown_distribution = one_sixteenth
 
-    sample break_path, start: timed_note.first, finish: timed_note.last, rate: normal_speed_to_slowdown_distribution.sample
+    tempo_adjusted_rate = normal_speed_to_slowdown_distribution.sample * TEMPO
+
+    triggered_break = break_path.is_a?(Array) ? break_path.sample : break_path
+
+    sample triggered_break, start: timed_note.first, finish: timed_note.last, rate: tempo_adjusted_rate
     sleep timing_to_sleep(timing: timed_note, loop_length_in_seconds: LOOP_LENGTH)
   end
 end
 
 in_thread(name: :breakz) do
   loop do
-    with_fx :reverb, room: 0.2, mix: 0.05 do
-      distort do
+    with_fx :reverb, room: 0.2, mix: 0.05 do; distort do;
 
-        main_break = BREAK_PATHS.sample
-        fill_in_break = BREAK_PATHS.sample
+      main_break = BREAK_PATHS.sample
+      fill_in_break = (BREAK_PATHS - [main_break]).sample
 
-        puts main_break
-        puts fill_in_break
+      puts main_break
+      puts fill_in_break
 
-        timings = [[0.0, 0.25], [0.25, 0.5], [0.5, 0.75], [0.75, 1.0]]
+      timings = [[0.0, (0.25 * TEMPO)], [0.25, (0.5 * TEMPO)], [0.5, (0.75 * TEMPO)], [0.75, (1.0 * TEMPO)]]
+
+
+      # MAIN BREAK
+      [8, 4, 2].sample.times do
 
         first_drum_seq = [timings.first] + 7.times.collect { timings.sample }
 
-        2.times do
-
-          3.times do
+        3.times do
+          with_fx :slicer, pulse_width: LOOP_LENGTH do
             play_break_seq(drum_seq: first_drum_seq, break_path: main_break)
           end
-
-          fill_in_drum_seq = [timings.first] + 7.times.collect { timings.sample }
-
-          1.times do
-            play_break_seq(drum_seq: fill_in_drum_seq, break_path: fill_in_break)
-          end
-
         end
+
+        fill_in_drum_seq = [timings.first] + 7.times.collect { timings.sample }
+
+        # FILL IN BAR
+        1.times do
+          play_break_seq(drum_seq: fill_in_drum_seq, break_path: [fill_in_break, main_break])
+        end
+
       end
-    end
+
+      # BREAK DOWN
+      [2, 1, 0].sample.times do
+        sleep 4 * LOOP_LENGTH
+      end
+    end; end
   end
 end
 
 in_thread(name: :bass) do
   loop do
-    use_synth %w(sine).sample
+    use_synth %w(hoover prophet).sample
 
-    bass_seq = make_fixed_length_seq(length: 16.0 * (LOOP_LENGTH / 4.0), timings: NOTE_LENGTH_DISTRIBUTION) do
-      chord([[:c2, :m7], [:d2, :m7]].sample).sample
+    section_scale = [scale(:e2, :minor_pentatonic, num_octaves: 2),
+                     scale(:c2, :major_pentatonic, num_octaves: 2)].sample
+
+    bass_seq = make_fixed_length_seq(length: 16.0 * (LOOP_LENGTH / 4.0), timings: SHORT_NOTE_LENGTH_DISTRIBUTION) do
+      section_scale.sample
     end
+
+    lead_for_bar = %w(square mod_fm mod_dsaw growl).sample
+    chord_diff = [4].sample
 
     4.times do |index|
 
       bass_seq.shuffle! if index == 3
+      distort do; #with_fx :rlpf, cutoff: rrand(50, 130), res: [0.2, 0.4].choose do; random_pan do; # with_fx :ixi_techno, res: 0.1, amp: 0.3, phase: SHORT_NOTE_LENGTH_DISTRIBUTION.sample do
 
-      distort do
-        with_fx :rlpf, cutoff: rrand(70, 130), res: [0.2, 0.4].choose do
-          random_pan do
+        bass_seq.each do |timed_note|
+          with_fx :wobble, pulse_width: LOOP_LENGTH do
+            use_synth %w(sine).sample
+            play timed_note.keys.first, release: NOTE_LENGTH_DISTRIBUTION.select { |n| n <= timed_note.values.first }.choose, amp: rrand(0.6, 0.8)
 
-            bass_seq.each do |timed_note|
-              play timed_note.keys.first, release: NOTE_LENGTH_DISTRIBUTION.select { |n| n <= timed_note.values.first }.choose, amp: rrand(0.6, 0.8)
-              sleep timed_note.values.last
-            end
+            base_note = timed_note.keys.first
 
+            use_synth lead_for_bar
+            play_chord [base_note + 12, base_note + 12 + chord_diff], release: NOTE_LENGTH_DISTRIBUTION.select { |n| n <= timed_note.values.first }.sample, amp: rrand(0.4, 0.8)
           end
-        end
-      end
-    end
-  end
-end
 
-in_thread(name: :sounds) do
-  loop do
-    with_fx :echo, phase: 0.6, mix: 0.6 do
-      with_fx :hpf, cutoff: 40 do
-        with_fx :wobble, amp: 0.5, cutoff_min: 60, cutoff_max: 128, filter: 0 do
-          [lambda { sample :bass_voxy_c, amp: rrand(0.1, 0.4), rate: 1.0 },
-           lambda { sample :ambi_piano, amp: rrand(0.3, 0.7), rate: 1.0 },
-           lambda { sample :guit_harmonics, amp: 0.5}].choose.call
+          sleep timed_note.values.last
         end
-      end
-      sleep map_durations(conservative: 2, wild: 1, slow: 3).choose
+      end; #end; end; #end
     end
   end
 end
