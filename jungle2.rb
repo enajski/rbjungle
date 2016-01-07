@@ -104,14 +104,21 @@ in_thread(name: :bass) do
 
         bass_seq.each do |timed_note|
           use_synth %w(sine).sample
-          play timed_note.keys.first, release: NOTE_LENGTH_DISTRIBUTION.select { |n| n <= timed_note.values.first }.choose, amp: rrand(0.4, 0.8)
+
+          base_note_params = [release: NOTE_LENGTH_DISTRIBUTION.select { |n| n <= timed_note.values.first }.choose,
+                              amp: rrand(0.4, 0.8)]
+
+          play timed_note.keys.first, *base_note_params
 
           base_note = timed_note.keys.first
 
           use_synth lead_for_bar
 
           with_fx :wobble, pulse_width: SHORT_NOTE_LENGTH_DISTRIBUTION.sample do
-            play_chord [base_note + 12, base_note + 12 + chord_diff], release: NOTE_LENGTH_DISTRIBUTION.select { |n| n <= timed_note.values.first }.sample, amp: rrand(0.4, 0.6)
+            harmonic_note_params = [release: NOTE_LENGTH_DISTRIBUTION.select { |n| n <= timed_note.values.first }.sample,
+                                    amp: rrand(0.4, 0.6)]
+
+            play_chord [base_note + 12, base_note + 12 + chord_diff], *harmonic_note_params
           end
 
           sleep timed_note.values.last
@@ -123,7 +130,12 @@ end
 
 in_thread(name: :sampler) do
   loop do
-    with_fx :echo, phase: SHORT_NOTE_LENGTH_DISTRIBUTION.sample, mix: 0.9, decay: LONG_NOTE_LENGTH_DISTRIBUTION.sample, max_phase: SHORT_NOTE_LENGTH_DISTRIBUTION.max do
+    echo_params = [phase: SHORT_NOTE_LENGTH_DISTRIBUTION.sample,
+                   mix: 0.9,
+                   decay: LONG_NOTE_LENGTH_DISTRIBUTION.sample,
+                   max_phase: SHORT_NOTE_LENGTH_DISTRIBUTION.max]
+
+    with_fx :echo, *echo_params do
       with_fx :flanger do
         sample RAGGA_PATHS.sample, rate: HALF_SPEED_AND_DOUBLE_SPEED.sample
       end
