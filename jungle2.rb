@@ -60,7 +60,6 @@ in_thread(name: :breakz) do
 
       # MAIN BREAK
       [8, 4, 2].sample.times do
-
         first_drum_seq = [timings.first] + 7.times.collect { timings.sample }
 
         3.times do
@@ -75,7 +74,6 @@ in_thread(name: :breakz) do
         1.times do
           play_break_seq(drum_seq: fill_in_drum_seq, break_path: [fill_in_break, main_break])
         end
-
       end
 
       # BREAK DOWN
@@ -90,8 +88,7 @@ in_thread(name: :bass) do
   loop do
     use_synth %w(hoover prophet).sample
 
-    section_scale = [scale(:e2, :minor_pentatonic, num_octaves: 2),
-                     scale(:c2, :major_pentatonic, num_octaves: 2)].sample
+    section_scale = scale(:e2, :minor_pentatonic, num_octaves: [2, 1].sample)
 
     bass_seq = make_fixed_length_seq(length: 16.0 * (LOOP_LENGTH / 4.0), timings: SHORT_NOTE_LENGTH_DISTRIBUTION) do
       section_scale.sample
@@ -103,17 +100,18 @@ in_thread(name: :bass) do
     4.times do |index|
 
       bass_seq.shuffle! if index == 3
-      distort do; #with_fx :rlpf, cutoff: rrand(50, 130), res: [0.2, 0.4].choose do; random_pan do; # with_fx :ixi_techno, res: 0.1, amp: 0.3, phase: SHORT_NOTE_LENGTH_DISTRIBUTION.sample do
+      distort do; #with_fx :rlpf, cutoff: rrand(50, 130), res: [0.2, 0.4].choose do; random_pan do; #
 
         bass_seq.each do |timed_note|
-          with_fx :wobble, pulse_width: LOOP_LENGTH do
-            use_synth %w(sine).sample
-            play timed_note.keys.first, release: NOTE_LENGTH_DISTRIBUTION.select { |n| n <= timed_note.values.first }.choose, amp: rrand(0.6, 0.8)
+          use_synth %w(sine).sample
+          play timed_note.keys.first, release: NOTE_LENGTH_DISTRIBUTION.select { |n| n <= timed_note.values.first }.choose, amp: rrand(0.4, 0.8)
 
-            base_note = timed_note.keys.first
+          base_note = timed_note.keys.first
 
-            use_synth lead_for_bar
-            play_chord [base_note + 12, base_note + 12 + chord_diff], release: NOTE_LENGTH_DISTRIBUTION.select { |n| n <= timed_note.values.first }.sample, amp: rrand(0.4, 0.8)
+          use_synth lead_for_bar
+
+          with_fx :wobble, pulse_width: SHORT_NOTE_LENGTH_DISTRIBUTION.sample do
+            play_chord [base_note + 12, base_note + 12 + chord_diff], release: NOTE_LENGTH_DISTRIBUTION.select { |n| n <= timed_note.values.first }.sample, amp: rrand(0.4, 0.6)
           end
 
           sleep timed_note.values.last
