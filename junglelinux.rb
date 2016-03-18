@@ -3,11 +3,11 @@ require "~/experiments/rbjungle/sounds.rb"
 require "~/experiments/rbjungle/effects.rb"
 require "marky_markov"
 
-BREAK_PATHS = Dir.chdir("/media/pi/real_jungle_loops_by_noise_relations/") do
+BREAK_PATHS = Dir.chdir("/media/pi/SONICPI/real_jungle_loops_by_noise_relations/") do
   Dir.glob("*.wav").map { |path| Dir.pwd + "/" + path }
 end
 
-RAGGA_PATHS = Dir.chdir("/media/pi/ragga_samples/") do
+RAGGA_PATHS = Dir.chdir("/media/pi/SONICPI/ragga_samples/") do
   Dir.glob("*.wav").map { |path| Dir.pwd + "/" + path }
 end
 
