@@ -86,8 +86,6 @@ end
 
 in_thread(name: :bass) do
   loop do
-    use_synth %w(hoover prophet).sample
-
     section_scale = scale(:e2, :minor_pentatonic, num_octaves: [2, 1].sample)
 
     bass_seq = make_fixed_length_seq(length: 16.0 * (LOOP_LENGTH / 4.0), timings: SHORT_NOTE_LENGTH_DISTRIBUTION) do
