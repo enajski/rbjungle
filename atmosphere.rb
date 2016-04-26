@@ -1,5 +1,5 @@
 def song; with_fx :distortion do; with_fx :reverb do
-  sample_pattern = /(bass|guit|ambi)/
+  sample_pattern = /(bass|guit|ambi|perc)/
   samples = all_sample_names.to_a.select { |sn| sample_pattern.match(sn) }.shuffle
   samples.each do |sn|
     sample sn, pan: [-0.8, 0, 0.8].sample, rate: [0.005, 0.01, 0.02, 0.05, 0.1, 0.2].sample
