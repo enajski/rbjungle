@@ -3,7 +3,6 @@ def verse(sequence)
     self.send(note)
     sleep 0.3
   end
-  puts "Ended #{sequence.size} note bar"
 end
 
 def word(note)
@@ -57,4 +56,26 @@ def make_markov(input)
     gsub(".", "").
     split(" ").
     map(&:to_sym)
+end
+
+def timing_to_sleep(timing:, loop_length_in_seconds:)
+  start = timing.first
+  finish = timing.last
+
+  partial_length = finish - start
+  partial_length * loop_length_in_seconds * 1.0
+end
+
+def play_break_seq(drum_seq:, break_path:, length:)
+  drum_seq.each do |timed_note|
+    one_sixteenth = ([1.0] * 15) + [0.5]
+    normal_speed_to_slowdown_distribution = one_sixteenth
+
+    tempo_adjusted_rate = normal_speed_to_slowdown_distribution.sample
+
+    triggered_break = break_path.is_a?(Array) ? break_path.sample : break_path
+
+    sample triggered_break, start: timed_note.first, finish: timed_note.last, rate: tempo_adjusted_rate
+    sleep timing_to_sleep(timing: timed_note, loop_length_in_seconds: length)
+  end
 end
