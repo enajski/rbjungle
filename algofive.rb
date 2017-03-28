@@ -4,7 +4,7 @@ def intro; with_fx :distortion do; with_fx :reverb do
   sample_pattern = /(perc|ambi|guit)/
   samples = all_sample_names.to_a.select { |sn| sample_pattern.match(sn) }.shuffle
   samples.each do |sn|
-    sample sn, pan: [-0.8, 0, 0.8].sample, rate: [0.05, 0.1, 0.2].sample, amp: 0.2
+    sample sn, pan: [-0.8, 0, 0.8].sample, rate: [0.05, 0.1, 0.2].sample, amp: 0.1
     sleep [0.15, 0.3, 0.6, 1.2, 2.4, 4.8].sample
   end
 end;end;end
@@ -77,8 +77,8 @@ live_loop :drums do
       timings = create_timings(parts: [4, 8, 16].sample)
 
       def with_random_fx(&block)
-        with_fx :bitcrusher, bits: rrand(8,16), sample_rate: rrand(8000, 16000), mix: [1.0, 0.5, 0.3].sample do
-          with_fx :ixi_techno, phase: NOTE_LENGTH_DISTRIBUTION.sample, cutoff_min: 100, res: [0.2, 0.1].sample, mix: [0.8, 0.05].sample do
+        with_fx :bitcrusher, bits: rrand(10,16), sample_rate: rrand(10000, 44100), mix: [1.0, 0.5, 0.3].sample do
+          with_fx :ixi_techno, phase: NOTE_LENGTH_DISTRIBUTION.sample, cutoff_min: 90, res: [0.2, 0.1].sample, mix: [0.8, [0.0] * 4].flatten.sample do
             random_pan(probability: 0.2) do
               yield
             end
@@ -92,7 +92,10 @@ live_loop :drums do
 
         [[3] * 4, 1, 0].flatten.sample.times do
           with_random_fx do
-            play_break_seq(drum_seq: first_drum_seq, break_path: main_break, length: LOOP_LENGTH * [1, 0.5].sample)
+            play_break_seq(drum_seq: first_drum_seq,
+                           break_path: main_break,
+                           length: LOOP_LENGTH * [1, 0.5].sample,
+                           overlap: 0.0)
           end
         end
 
@@ -101,7 +104,10 @@ live_loop :drums do
         # FILL IN BAR
         1.times do
           with_fx :reverb, room: 0.4, mix: [0.5, 0.05].sample do
-            play_break_seq(drum_seq: fill_in_drum_seq, break_path: [fill_in_break, main_break], length: LOOP_LENGTH)
+            (play_break_seq drum_seq: fill_in_drum_seq,
+                            break_path: [fill_in_break, main_break],
+                            length: LOOP_LENGTH,
+                            overlap: 0.1275)
           end
         end
       end

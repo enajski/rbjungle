@@ -3,7 +3,7 @@ def coin_toss(probability, on_state: 1.0, off_state: 0.0)
 end
 
 def distort(probability: 1.0, &block)
-  with_fx :distortion, distort: 0.8, mix: coin_toss(probability, off_state: 0.2) do
+  with_fx :distortion, distort: 0.8, mix: coin_toss(probability, off_state: 0.5) do
     yield
   end
 end
