@@ -67,7 +67,7 @@ def timing_to_sleep(timing:, loop_length_in_seconds:)
 end
 
 def play_break_seq(drum_seq:, break_path:, length:)
-  drum_seq.each do |timed_note|
+  drum_seq.each_with_index do |timed_note, index|
     one_sixteenth = ([1.0] * 15) + [0.5]
     normal_speed_to_slowdown_distribution = one_sixteenth
 
@@ -75,7 +75,8 @@ def play_break_seq(drum_seq:, break_path:, length:)
 
     triggered_break = break_path.is_a?(Array) ? break_path.sample : break_path
 
-    sample triggered_break, start: timed_note.first, finish: timed_note.last, rate: tempo_adjusted_rate
+    sample triggered_break, start: timed_note.first, finish: (timed_note.last + ((timed_note.last - timed_note.first) * length) * (length / LOOP_LENGTH)), rate: tempo_adjusted_rate
+    # sample triggered_break, start: timed_note.first, finish: (timed_note.last + (timed_note.last * (length / LOOP_LENGTH)), rate: tempo_adjusted_rate
     sleep timing_to_sleep(timing: timed_note, loop_length_in_seconds: length)
   end
 end
